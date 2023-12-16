@@ -14,7 +14,7 @@ p = pyaudio.PyAudio()
 
 # Open stream for recording
 stream = p.open(format=FORMAT, channels=CHANNELS,
-                rate=RATE, input=True,
+                rate=RATE, input=True, input_device_index=1,
                 frames_per_buffer=CHUNK)
 
 print("Recording...")
