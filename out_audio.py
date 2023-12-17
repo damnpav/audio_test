@@ -10,15 +10,16 @@ WAVE_OUTPUT_FILENAME = "output.wav"
 
 p = pyaudio.PyAudio()
 
-# Select the BlackHole/Soundflower as the source
+
 device_index = None
 for i in range(p.get_device_count()):
     dev = p.get_device_info_by_index(i)
-    if dev['name'] == 'BlackHole 2ch' and dev['hostApi'] == 0:
-        print(f'i = {i}; dev_nmae')
+    print(f"i = {i}; dev_name is {dev['name']}; host_api is {dev['hostApi']}")
+    if "Агрегат" in dev['name']:  # Replace with the actual name of your Aggregate Device
         device_index = i
         break
-
+print(f'chosen device index is {i}')
+#device_index = 2
 # Ensure the virtual device was found
 if device_index is None:
     raise Exception("Could not find BlackHole/Soundflower virtual audio device.")
