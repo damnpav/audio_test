@@ -2,7 +2,7 @@ import pyaudio
 import whisper
 import wave
 from datetime import datetime as dt
-from db_fun import initialize_cursor, check_for_order
+from db_fun import initialize_cursor, check_for_order, audio_completed, record_audio_file
 
 
 # Set the parameters for the recording
@@ -39,18 +39,22 @@ while stop == 0:
         data = stream.read(CHUNK)
         frames.append(data)
 
-        if check_for_order():
+        if check_for_order(conn):
             flag = 1
+            stop = 1
 
     # Stop and close the stream
     stream.stop_stream()
     stream.close()
-    p.terminate()
-    wf = wave.open(WAVE_OUTPUT_FILENAME + f"output_{dt.now().strftime('%H_%M_%S_%d_%m')}.wav", 'wb')
+    audio_completed(cursor, conn)
+    audio_file_path = WAVE_OUTPUT_FILENAME + f"output_{dt.now().strftime('%H_%M_%S_%d_%m')}.wav"
+    wf = wave.open(audio_file_path, 'wb')
     wf.setnchannels(CHANNELS)
     wf.setsampwidth(p.get_sample_size(FORMAT))
     wf.setframerate(RATE)
     wf.writeframes(b''.join(frames))
     wf.close()
+    record_audio_file(audio_file_path, cursor, conn)
+
 
 

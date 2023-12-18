@@ -22,8 +22,10 @@ def check_for_order(conn):
     :return:
     """
     check_sql = """
-                SELECT * FROM control_panel
-                WHERE Order IS NOT NULL and AudioCompleted IS NULL
+                SELECT * 
+                FROM control_panel
+                WHERE 
+                OrderID IS NOT NULL and AudioCompleted IS NULL
                 """
     order_df = pd.read_sql(check_sql, conn)
     if len(order_df) > 0:
@@ -32,28 +34,33 @@ def check_for_order(conn):
         return False
 
 
-def audio_completed(cursor):
+def audio_completed(cursor, conn):
     """
     Mark that audio stream is completed
     :return:
     """
     update_sql = f"""
                  UPDATE control_panel
-                 SET AudioCompleted = {dt.now().strftime('%H_%M_%S_%d_%m')}
-                 WHERE Order IS NOT NULL
+                 SET AudioCompleted = '{dt.now().strftime('%H_%M_%S_%d_%m')}'
+                 WHERE OrderID IS NOT NULL
                  AND AudioCompleted IS NULL
                  """
-    cursor.sql(update_sql)
+    cursor.execute(update_sql)
+    conn.commit()
 
 
-def record_audio_file(file_path):
+def record_audio_file(file_path, cursor, conn):
     """
     Record to db path to saved audio file
     :param file_path:
     :return:
     """
-    alter_sql = """
-                INSERT INTO control_panel
-                 
+    alter_sql = f"""
+                UPDATE control_panel
+                SET AudioFilePath = '{file_path}'
+                WHERE OrderID IS NOT NULL
+                AND AudioFilePath IS NULL
                 """
+    cursor.execute(alter_sql)
+    conn.commit()
 
