@@ -22,6 +22,10 @@ p = pyaudio.PyAudio()
 for i in range(p.get_device_count()):
     dev = p.get_device_info_by_index(i)
     print(f"i = {i}; dev_name is {dev['name']}; host_api is {dev['hostApi']}")
+    print(f"Max Input Channels = {dev['maxInputChannels']}; Max Output Channels = {dev['maxOutputChannels']}\n")
+
+input_device = int(input('\nWrite your input device\n'))
+CHANNELS = int(input('\nWrite numbers of channels\n'))
 
 cursor, conn = initialize_cursor()
 
@@ -30,7 +34,7 @@ stop = 0
 
 while stop == 0:
     stream = p.open(format=FORMAT, channels=CHANNELS,
-                    rate=RATE, input=True, input_device_index=1,
+                    rate=RATE, input=True, input_device_index=input_device,
                     frames_per_buffer=CHUNK)
     frames = []
     flag = 0

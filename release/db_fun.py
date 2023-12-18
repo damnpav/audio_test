@@ -64,3 +64,38 @@ def record_audio_file(file_path, cursor, conn):
     cursor.execute(alter_sql)
     conn.commit()
 
+
+def transcriber_listener(cursor, conn):
+    """
+    Listen DB for new audio files to transcribe
+    :param cursor:
+    :param conn:
+    :return:
+    """
+    listen_sql = f"""
+                  SELECT OrderID, AudioFilePath 
+                  FROM control_panel
+                  WHERE TranscribeCompleted IS NULL
+                  AND OrderID IS NOT NULL
+                  AND AudioFilePath IS NOT NULL
+                  """
+    listen_df = pd.read_sql(listen_sql, conn)
+    return listen_df
+
+
+def transcribing_results(transcribed_text, order_id, cursor, conn):
+    """
+    Write time and text from transcribing
+    :param cursor:
+    :param conn:
+    :return:
+    """
+    transcribed_sql = f"""
+                       UPDATE control_panel
+                       SET TranscribeCompleted = '{dt.now().strftime('%H_%M_%S_%d_%m')}',
+                           TranscribeText = '{transcribed_text}'
+                       WHERE OrderID = '{order_id}'
+                       """
+    cursor.execute(transcribed_sql)
+    conn.commit()
+
