@@ -99,3 +99,21 @@ def transcribing_results(transcribed_text, order_id, cursor, conn):
     cursor.execute(transcribed_sql)
     conn.commit()
 
+
+def add_order(order_id, cursor, conn):
+    """
+    Function to append order_id
+    :param order_id:
+    :param cursor:
+    :param conn:
+    :return:
+    """
+    ts = dt.now().strftime('%H_%M_%S_%d_%m')
+    order_sql = f"""
+                INSERT INTO control_panel (TimeStamp, OrderId)
+                VALUES ('{ts}', '{order_id}')
+                """
+    cursor.execute(order_sql)
+    conn.commit()
+
+
