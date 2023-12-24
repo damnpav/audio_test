@@ -110,7 +110,7 @@ def add_order(order_id, cursor, conn):
     """
     ts = dt.now().strftime('%H_%M_%S_%d_%m')
     order_sql = f"""
-                INSERT INTO control_panel (TimeStamp, OrderId)
+                INSERT INTO control_panel (TimeStamp, OrderID)
                 VALUES ('{ts}', '{order_id}')
                 """
     cursor.execute(order_sql)

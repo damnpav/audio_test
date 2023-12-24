@@ -25,7 +25,7 @@ for i in range(p.get_device_count()):
     print(f"Max Input Channels = {dev['maxInputChannels']}; Max Output Channels = {dev['maxOutputChannels']}\n")
 
 input_device = int(input('\nWrite your input device\n'))
-CHANNELS = int(input('\nWrite numbers of channels\n'))
+# CHANNELS = int(input('\nWrite numbers of channels\n'))
 
 cursor, conn = initialize_cursor()
 
@@ -40,10 +40,15 @@ while stop == 0:
     flag = 0
 
     while flag == 0:
-        data = stream.read(CHUNK)
-        frames.append(data)
+        try:
+            data = stream.read(CHUNK)
+            frames.append(data)
 
-        if check_for_order(conn):
+            if check_for_order(conn):
+                flag = 1
+                stop = 1
+        except Exception as e:
+            print(f'Exception at recording: {e}')
             flag = 1
             stop = 1
 
