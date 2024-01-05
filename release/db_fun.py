@@ -83,6 +83,24 @@ def transcriber_listener(cursor, conn):
     return listen_df
 
 
+def question_listener(cursor, conn):
+    """
+    Listen DB for new questions
+    :param cursor:
+    :param conn:
+    :return:
+    """
+    listen_sql = f"""
+                  SELECT OrderID, TranscribeText 
+                  FROM control_panel
+                  WHERE TranscribeCompleted IS NOT NULL
+                  AND OrderID IS NOT NULL
+                  AND ChatQuerySend IS NULL
+                  """
+    listen_df = pd.read_sql(listen_sql, conn)
+    return listen_df
+
+
 def transcribing_results(transcribed_text, order_id, cursor, conn):
     """
     Write time and text from transcribing
@@ -92,11 +110,48 @@ def transcribing_results(transcribed_text, order_id, cursor, conn):
     """
     transcribed_sql = f"""
                        UPDATE control_panel
-                       SET TranscribeCompleted = '{dt.now().strftime('%H_%M_%S_%d_%m')}',
-                           TranscribeText = '{transcribed_text}'
-                       WHERE OrderID = '{order_id}'
+                       SET TranscribeCompleted = "{dt.now().strftime('%H_%M_%S_%d_%m')}",
+                           TranscribeText = "{transcribed_text.replace('"', '')}"
+                       WHERE OrderID = "{order_id}"
                        """
+    #print(f'sql: {transcribed_sql}')
     cursor.execute(transcribed_sql)
+    conn.commit()
+
+
+def question_results(answer_text, order_id, cursor, conn):
+    """
+    Write time and text from question
+    :param cursor:
+    :param conn:
+    :return:
+    """
+    answer_sql = f"""
+                       UPDATE control_panel
+                       SET ChatResponseGet = "{dt.now().strftime('%H_%M_%S_%d_%m')}",
+                           ChatResponseText = "{answer_text.replace('"', '')}"
+                       WHERE OrderID = "{order_id}"
+                       """
+    #print(f'sql: {answer_sql}')
+    cursor.execute(answer_sql)
+    conn.commit()
+
+
+def question_send(question_text, order_id, cursor, conn):
+    """
+    Write time and text from question
+    :param cursor:
+    :param conn:
+    :return:
+    """
+    question_sql = f"""
+                       UPDATE control_panel
+                       SET ChatQuerySend = "{dt.now().strftime('%H_%M_%S_%d_%m')}",
+                           ChatQueryText = "{question_text.replace('"', '')}"
+                       WHERE OrderID = "{order_id}"
+                       """
+    #print(f'sql: {question_sql}')
+    cursor.execute(question_sql)
     conn.commit()
 
 

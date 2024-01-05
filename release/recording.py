@@ -24,8 +24,9 @@ for i in range(p.get_device_count()):
     print(f"i = {i}; dev_name is {dev['name']}; host_api is {dev['hostApi']}")
     print(f"Max Input Channels = {dev['maxInputChannels']}; Max Output Channels = {dev['maxOutputChannels']}\n")
 
+# TODO select static devices
 input_device = int(input('\nWrite your input device\n'))
-# CHANNELS = int(input('\nWrite numbers of channels\n'))
+CHANNELS = int(input('\nWrite numbers of channels\n'))
 
 cursor, conn = initialize_cursor()
 
