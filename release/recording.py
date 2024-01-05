@@ -13,10 +13,10 @@ CHUNK = 1024              # Frames per buffer
 # RECORD_SECONDS = 15        # Duration of recording
 WAVE_OUTPUT_FILENAME = "audio_files/"
 SECONDS_PERIOD = 30
+num_frames_to_keep = int((RATE / CHUNK) * SECONDS_PERIOD)
 
 # Initialize PyAudio
 p = pyaudio.PyAudio()
-
 
 # Print available channels
 for i in range(p.get_device_count()):
@@ -44,6 +44,9 @@ while stop == 0:
         try:
             data = stream.read(CHUNK)
             frames.append(data)
+
+            if len(frames) > num_frames_to_keep:
+                frames.pop(0)
 
             if check_for_order(conn):
                 flag = 1
