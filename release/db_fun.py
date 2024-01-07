@@ -65,7 +65,7 @@ def record_audio_file(file_path, cursor, conn):
     conn.commit()
 
 
-def transcriber_listener(cursor, conn):
+def transcriber_listener(conn):
     """
     Listen DB for new audio files to transcribe
     :param cursor:
@@ -83,7 +83,7 @@ def transcriber_listener(cursor, conn):
     return listen_df
 
 
-def question_listener(cursor, conn):
+def question_listener(conn):
     """
     Listen DB for new questions
     :param cursor:
@@ -171,4 +171,20 @@ def add_order(order_id, cursor, conn):
     cursor.execute(order_sql)
     conn.commit()
 
+
+def answer_listener(conn):
+    """
+    Listen DB for new answers
+    :param cursor:
+    :param conn:
+    :return:
+    """
+    listen_sql = f"""
+                  SELECT ChatResponseGet, ChatResponseText 
+                  FROM control_panel
+                  WHERE ChatResponseGet IS NOT NULL
+                  AND ChatResponseText IS NOT NULL
+                  """
+    listen_df = pd.read_sql(listen_sql, conn)
+    return listen_df
 

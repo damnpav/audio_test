@@ -11,7 +11,7 @@ with open('question_form.txt', 'r') as file:
 
 stop_flag = 0
 while stop_flag == 0:
-    listen_df = question_listener(cursor, conn)
+    listen_df = question_listener(conn)
 
     if len(listen_df) > 0:
         if len(listen_df) > 1:

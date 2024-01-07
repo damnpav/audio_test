@@ -7,7 +7,7 @@ model = whisper.load_model('base')
 
 stop_flag = 0
 while stop_flag == 0:
-    listen_df = transcriber_listener(cursor, conn)
+    listen_df = transcriber_listener(conn)
 
     if len(listen_df) > 0:
         if len(listen_df) > 1:
