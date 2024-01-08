@@ -1,16 +1,25 @@
 from langchain.chat_models import ChatOpenAI
-from db_fun import initialize_cursor, question_listener, question_results, question_send
+from db_fun import initialize_cursor, question_listener, question_results, question_send, stop_check
 
 cursor, conn = initialize_cursor()
-with open('../auth_file.txt', 'r') as keyfile:
+# auth_path = '../auth_file.txt'
+# question_path = 'question_form.txt'
+auth_path = '/Users/dp_user/PycharmProjects/audio_test/auth_file.txt'
+question_path = '/Users/dp_user/PycharmProjects/audio_test/release/question_form.txt'
+
+with open(auth_path, 'r') as keyfile:
     api_key = keyfile.read()
 llm = ChatOpenAI(openai_api_key=api_key)
 
-with open('question_form.txt', 'r') as file:
+with open(question_path, 'r') as file:
     question_form = file.read()
 
 stop_flag = 0
 while stop_flag == 0:
+    if stop_check(conn):
+        stop_flag = 1
+        break
+
     listen_df = question_listener(conn)
 
     if len(listen_df) > 0:
@@ -23,7 +32,9 @@ while stop_flag == 0:
         question_send(question_query, order_id, cursor, conn)
         response = llm.invoke(question_query)
         question_results(response.content, order_id, cursor, conn)
-        stop_flag = 1
+        # stop_flag = 1
+
+
 
 
 

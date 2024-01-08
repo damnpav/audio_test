@@ -2,7 +2,7 @@ import pyaudio
 import whisper
 import wave
 from datetime import datetime as dt
-from db_fun import initialize_cursor, check_for_order, audio_completed, record_audio_file
+from db_fun import initialize_cursor, check_for_order, audio_completed, record_audio_file, stop_check
 
 
 # Set the parameters for the recording
@@ -11,7 +11,8 @@ CHANNELS = 1              # Single channel for microphone
 RATE = 44100              # Sample rate
 CHUNK = 1024              # Frames per buffer
 # RECORD_SECONDS = 15        # Duration of recording
-WAVE_OUTPUT_FILENAME = "audio_files/"
+#WAVE_OUTPUT_FILENAME = "audio_files/"
+WAVE_OUTPUT_FILENAME = "/Users/dp_user/PycharmProjects/audio_test/release/audio_files/"
 SECONDS_PERIOD = 30
 num_frames_to_keep = int((RATE / CHUNK) * SECONDS_PERIOD)
 
@@ -25,13 +26,16 @@ for i in range(p.get_device_count()):
     print(f"Max Input Channels = {dev['maxInputChannels']}; Max Output Channels = {dev['maxOutputChannels']}\n")
 
 # TODO select static devices
-input_device = int(input('\nWrite your input device\n'))
-CHANNELS = int(input('\nWrite numbers of channels\n'))
+# input_device = int(input('\nWrite your input device\n'))
+# CHANNELS = int(input('\nWrite numbers of channels\n'))
+input_device = 7
+CHANNELS = 2
 
 cursor, conn = initialize_cursor()
 
 print("Recording...")
 stop = 0
+
 
 while stop == 0:
     stream = p.open(format=FORMAT, channels=CHANNELS,
@@ -39,8 +43,14 @@ while stop == 0:
                     frames_per_buffer=CHUNK)
     frames = []
     flag = 0
+    no_save = 0
 
     while flag == 0:
+        if stop_check(conn):
+            flag = 1
+            stop = 1
+            no_save = 1  # Close without saving of file
+            break
         try:
             data = stream.read(CHUNK)
             frames.append(data)
@@ -50,24 +60,25 @@ while stop == 0:
 
             if check_for_order(conn):
                 flag = 1
-                stop = 1
+                # stop = 1
         except Exception as e:
             print(f'Exception at recording: {e}')
             flag = 1
-            stop = 1
+            # stop = 1
 
-    # Stop and close the stream
-    stream.stop_stream()
-    stream.close()
-    audio_completed(cursor, conn)
-    audio_file_path = WAVE_OUTPUT_FILENAME + f"output_{dt.now().strftime('%H_%M_%S_%d_%m')}.wav"
-    wf = wave.open(audio_file_path, 'wb')
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(p.get_sample_size(FORMAT))
-    wf.setframerate(RATE)
-    wf.writeframes(b''.join(frames))
-    wf.close()
-    record_audio_file(audio_file_path, cursor, conn)
+    if no_save == 0:
+        # Stop and close the stream
+        stream.stop_stream()
+        stream.close()
+        audio_completed(cursor, conn)
+        audio_file_path = WAVE_OUTPUT_FILENAME + f"output_{dt.now().strftime('%H_%M_%S_%d_%m')}.wav"
+        wf = wave.open(audio_file_path, 'wb')
+        wf.setnchannels(CHANNELS)
+        wf.setsampwidth(p.get_sample_size(FORMAT))
+        wf.setframerate(RATE)
+        wf.writeframes(b''.join(frames))
+        wf.close()
+        record_audio_file(audio_file_path, cursor, conn)
 
 
 

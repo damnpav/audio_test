@@ -3,7 +3,8 @@ import pandas as pd
 from datetime import datetime as dt
 
 
-db_path = '../audio_db.db'
+#db_path = '../audio_db.db'
+db_path = '/Users/dp_user/PycharmProjects/audio_test/audio_db.db'
 
 
 def initialize_cursor():
@@ -114,7 +115,6 @@ def transcribing_results(transcribed_text, order_id, cursor, conn):
                            TranscribeText = "{transcribed_text.replace('"', '')}"
                        WHERE OrderID = "{order_id}"
                        """
-    #print(f'sql: {transcribed_sql}')
     cursor.execute(transcribed_sql)
     conn.commit()
 
@@ -132,7 +132,6 @@ def question_results(answer_text, order_id, cursor, conn):
                            ChatResponseText = "{answer_text.replace('"', '')}"
                        WHERE OrderID = "{order_id}"
                        """
-    #print(f'sql: {answer_sql}')
     cursor.execute(answer_sql)
     conn.commit()
 
@@ -150,7 +149,6 @@ def question_send(question_text, order_id, cursor, conn):
                            ChatQueryText = "{question_text.replace('"', '')}"
                        WHERE OrderID = "{order_id}"
                        """
-    #print(f'sql: {question_sql}')
     cursor.execute(question_sql)
     conn.commit()
 
@@ -187,4 +185,41 @@ def answer_listener(conn):
                   """
     listen_df = pd.read_sql(listen_sql, conn)
     return listen_df
+
+
+def stop_check(conn):
+    """
+    Listen DB for new stop flags
+    :param conn:
+    :return:
+    """
+    stop_sql = f"""
+                  SELECT TimeStamp
+                  FROM stop_panel
+                  """
+    stop_df = pd.read_sql(stop_sql, conn)
+
+    if len(stop_df) > 0:
+        stop_df['TimeStamp'] = pd.to_datetime(stop_df['TimeStamp'], format='%H_%M_%S_%d_%m_%Y')
+        max_time = stop_df['TimeStamp'].max()
+        # TODO need to test it
+        if max_time > (dt.now() - pd.Timedelta(minutes=1)):
+            return True
+    return False
+
+
+def insert_stop_flag(cursor, conn):
+    """
+    Insert stop flag
+    :param cursor:
+    :param conn:
+    :return:
+    """
+    ts = dt.now().strftime('%H_%M_%S_%d_%m_%Y')
+    stop_sql = f"""
+                INSERT INTO stop_panel (TimeStamp)
+                VALUES ('{ts}')
+                """
+    cursor.execute(stop_sql)
+    conn.commit()
 
