@@ -1,5 +1,4 @@
 import pyaudio
-import whisper
 import wave
 from datetime import datetime as dt
 from db_fun import initialize_cursor, check_for_order, audio_completed, record_audio_file, stop_check
@@ -25,7 +24,7 @@ for i in range(p.get_device_count()):
     print(f"i = {i}; dev_name is {dev['name']}; host_api is {dev['hostApi']}")
     print(f"Max Input Channels = {dev['maxInputChannels']}; Max Output Channels = {dev['maxOutputChannels']}\n")
 
-# TODO select static devices
+
 # input_device = int(input('\nWrite your input device\n'))
 # CHANNELS = int(input('\nWrite numbers of channels\n'))
 input_device = 7
@@ -79,6 +78,7 @@ while stop == 0:
         wf.writeframes(b''.join(frames))
         wf.close()
         record_audio_file(audio_file_path, cursor, conn)
+
 
 
 

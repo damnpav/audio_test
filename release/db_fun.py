@@ -1,10 +1,20 @@
 import sqlite3
 import pandas as pd
 from datetime import datetime as dt
+import subprocess
 
 
 #db_path = '../audio_db.db'
 db_path = '/Users/dp_user/PycharmProjects/audio_test/audio_db.db'
+remote_path = '/usr/projects/audio'
+remote_pass_path = '/Users/dp_user/PycharmProjects/audio_test/remote_pass.txt'
+remote_address_path = '/Users/dp_user/PycharmProjects/audio_test/remote_address.txt'
+
+with open(remote_pass_path, 'r') as file:
+    remote_pass = file.read().strip()
+
+with open(remote_address_path, 'r') as file:
+    remote_address = file.read().strip()
 
 
 def initialize_cursor():
@@ -117,6 +127,7 @@ def transcribing_results(transcribed_text, order_id, cursor, conn):
                        """
     cursor.execute(transcribed_sql)
     conn.commit()
+    synchronize_db()
 
 
 def question_results(answer_text, order_id, cursor, conn):
@@ -161,6 +172,7 @@ def add_order(order_id, cursor, conn):
     :param conn:
     :return:
     """
+    truncate_db(cursor, conn)
     ts = dt.now().strftime('%H_%M_%S_%d_%m')
     order_sql = f"""
                 INSERT INTO control_panel (TimeStamp, OrderID)
@@ -223,3 +235,27 @@ def insert_stop_flag(cursor, conn):
     cursor.execute(stop_sql)
     conn.commit()
 
+
+def synchronize_db():
+    command = f'sshpass -p {remote_pass} scp {db_path} {remote_address}:{remote_path}'
+    try:
+        subprocess.run(command, shell=True, check=True)
+        print(f'File transferred')
+    except Exception as e:
+        print(f'Exception: {e}')
+
+
+def truncate_db(cursor, conn):
+    truncate_sql = """
+                   DELETE FROM control_panel
+                   """
+    cursor.execute(truncate_sql)
+    conn.commit()
+
+
+
+
+
+
+
+    
