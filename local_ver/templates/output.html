@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Live Updates</title>
+</head>
+<body>
+    <div id="response-container">
+        <!-- Responses will be displayed here -->
+    </div>
+
+    <script>
+    var addedResponses = new Set(); // Set to store added response texts
+
+    function fetchUpdates() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                var responses = JSON.parse(this.responseText);
+                var container = document.getElementById("response-container");
+
+                responses.forEach(function(response) {
+                    if (!addedResponses.has(response.ChatResponseText)) {
+                        var para = document.createElement("p");
+                        para.innerHTML = response.ChatResponseText;
+                        container.insertBefore(para, container.firstChild);
+                        addedResponses.add(response.ChatResponseText); // Add to the set of added responses
+                    }
+                });
+            }
+        };
+        xhttp.open("GET", "/get_updates", true);
+        xhttp.send();
+    }
+
+    setInterval(fetchUpdates, 1000); // Fetch updates every 1000 milliseconds (1 second)
+    </script>
+
+</body>
+</html>
